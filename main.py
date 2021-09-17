@@ -10,23 +10,14 @@ score = {'x': 10, 'o': -10, 'tie': 0}
 ai = 'x'
 human = 'o'
 current_player = human
-winner = ''
 
 def checkIfLinesHaveSamePlayer(a, b, c):
     res = (a == b and b == c and a != '')
-    print(res)
+    #print(res)
     return res
 
-def placesToFill():
-    empty_places = 0
-    for i in range(len(board)):
-        for j in range(len(board)):
-            if (board[i][j] == ''):
-                empty_places+=1
-    return empty_places
-
 def checkWinner():
-    global winner
+    winner = ''
     #Check horizontal
     if(checkIfLinesHaveSamePlayer(board[0][0], board[0][1], board[0][2])):
         winner = board[0][0]
@@ -45,8 +36,8 @@ def checkWinner():
         winner = board[0][2]
 
     empty_places = 0
-    for i in range(len(board)):
-        for j in range(len(board)):
+    for i in range(3):
+        for j in range(3):
             if (board[i][j] == ''):
                 empty_places+=1
 
