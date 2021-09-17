@@ -146,12 +146,6 @@ print('Human starts the game!!\n')
 human = 'O'
 ai = 'X'
 
-'''
-while not findWinner():
-    playerMove()
-    aiMove()
-'''
-
 try:
     while not findWinner():
         playerMove()
