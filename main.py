@@ -1,124 +1,160 @@
-import sys
-sys.setrecursionlimit(10000)
+def printBoard(board):
+    print('{}|{}|{}\n{}|{}|{}\n{}|{}|{}\n'.format(board[0],board[1],board[2],board[3],board[4],board[5],board[6],board[7],board[8]))
 
-board = [['', '', ''],
-         ['', '', ''],
-         ['', '', '']]
+def spaceIsFree(position):
+    if board[position] == '_':
+        return True
+    else:
+        return False
 
-score = {'x': 10, 'o': -10, 'tie': 0}
+def insertOnBoard(letter, position):
+    if spaceIsFree(position):
+        board[position] = letter
+        printBoard(board)
+        if (checkTie()):
+            print("Tie!")
+            exit()
+        if findWinner() == 'X':
+            print("AI wins!")
+            exit()
+        elif findWinner() == 'O':
+            print("You win!")
+            exit()
+        return
+    else:
+        print("Can't insert there!")
+        position = int(input("Please enter new position:  "))
+        insertLetter(letter, position)
+        return
 
-ai = 'x'
-human = 'o'
-current_player = human
+def insertLetter(letter, position):
+    if(letter == ai):
+        insertOnBoard(letter, position)
+    if(letter == human):
+        insertOnBoard(letter, position)    
 
-def checkIfLinesHaveSamePlayer(a, b, c):
-    res = (a == b and b == c and a != '')
-    #print(res)
-    return res
+def compare(a, b, c):
+    return a == b and a == c and a != '_'
 
-def checkWinner():
-    winner = ''
+def findWinner():
     #Check horizontal
-    if(checkIfLinesHaveSamePlayer(board[0][0], board[0][1], board[0][2])):
-        winner = board[0][0]
-    if(checkIfLinesHaveSamePlayer(board[1][0], board[1][1], board[1][2])):
-        winner = board[1][0]
-    if(checkIfLinesHaveSamePlayer(board[2][0], board[2][1], board[2][2])):
-        winner = board[2][0]
-
+    if(compare(board[0], board[1], board[2])):
+        return board[0] 
+    if(compare(board[3], board[4], board[5])):
+        return board[3]
+    if(compare(board[6], board[7], board[8])):
+        return board[6]
     #Check vertical
-    if(checkIfLinesHaveSamePlayer(board[0][0], board[1][0], board[2][0])):
-        winner = board[0][0]
+    if(compare(board[0], board[3], board[6])):
+        return board[0]
+    if(compare(board[1], board[4], board[7])):
+        return board[1]
+    if(compare(board[2], board[5], board[8])):
+        return board[2]
+    #Check diagonal
+    if(compare(board[0], board[4], board[8])):
+        return board[0]
+    if(compare(board[2], board[4], board[6])):
+        return board[2]
+
+def compareMinimax(a, b, c, d):
+    return a == b and a == c and a == d
+
+def checkWinnerInLevelMinimax(who):
     #Check horizontal
-    if(checkIfLinesHaveSamePlayer(board[0][1], board[1][1], board[2][1])):
-        winner = board[0][1]
-    if(checkIfLinesHaveSamePlayer(board[0][2], board[1][2], board[2][2])):
-        winner = board[0][2]
+    if(compareMinimax(board[0], board[1], board[2], who)):
+        return who
+    if(compareMinimax(board[3], board[4], board[5], who)):
+        return who
+    if(compareMinimax(board[6], board[7], board[8], who)):
+        return who
+    #Check vertical
+    if(compareMinimax(board[0], board[3], board[6], who)):
+        return who
+    if(compareMinimax(board[1], board[4], board[7], who)):
+        return who
+    if(compareMinimax(board[2], board[5], board[8], who)):
+        return who
+    #Check diagonal
+    if(compareMinimax(board[0], board[4], board[8], who)):
+        return who
+    if(compareMinimax(board[2], board[4], board[6], who)):
+        return who
 
-    empty_places = 0
-    for i in range(3):
-        for j in range(3):
-            if (board[i][j] == ''):
-                empty_places+=1
+def checkTie():
+    for key in board.keys():
+        if (board[key] == '_'):
+            return False
+    return True
 
-    #Check if tie
-    if(winner == '' and empty_places == 0):
-        return 'tie'
+def playerMove():
+    print('Human turn!')
+    print("Positions:\n0, 1, 2\n3, 4, 5\n6, 7, 8\n")
+    position = int(input("Enter the position for 'O':  "))
+    insertLetter(human, position)
+    return
+
+def aiMove():
+    print('AI turn!')
+    bestScore = -100
+    bestMove = 0
+    for key in board.keys():
+        if (board[key] == '_'):
+            board[key] = ai
+            score = minimax(board, 0, False)
+            board[key] = '_'
+            if (score > bestScore):
+                bestScore = score
+                bestMove = key
+    insertLetter(ai, bestMove)
+    return
+
+def minimax(board, depth, isMaximizing):
+    if (checkWinnerInLevelMinimax(ai) == ai):
+        return 10
+    elif (checkWinnerInLevelMinimax(human) == human):
+        return -10
+    elif (checkTie()):
+        return 0
+    if (isMaximizing):
+        bestScore = -100
+        for key in board.keys():
+            if (board[key] == '_'):
+                board[key] = ai
+                score = minimax(board, depth + 1, False)
+                board[key] = '_'
+                if (score > bestScore):
+                    bestScore = score
+        return bestScore
     else:
-        #print(winner)
-        return winner
+        bestScore = 100
+        for key in board.keys():
+            if (board[key] == '_'):
+                board[key] = human
+                score = minimax(board, depth + 1, True)
+                board[key] = '_'
+                if (score < bestScore):
+                    bestScore = score
+        return bestScore
 
-def drawPlay(x, y):
-    global current_player
-    if(current_player == human):
-        x = x
-        y = y
-        if(board[x][y] == ''):
-            board[x][y] = human
-            current_player = ai
-            bestMove()
+board = {0: '_', 1: '_', 2: '_',
+         3: '_', 4: '_', 5: '_',
+         6: '_', 7: '_', 8: '_'}
 
-def printBoard():
-    for i in range(len(board)):
-        print(board[i])
+printBoard(board)
+print('Human starts the game!!\n')
+human = 'O'
+ai = 'X'
 
-def bestMove():
-    global current_player
-    move = []
-    best_score = -1000
-    for i in range(3):
-        for j in range(3):
-            # Is the spot available?
-            if(board[i][j] == ''):
-                board[i][j] = ai
-                score = minimax(board, 0, False)
-                board[i][j] = ''
-                if(score > best_score):
-                    best_score = score
-                    move.append(i)
-                    move.append(j)
-    print(move)
-    board[move[0]][move[1]] = ai
-    current_player = human
+'''
+while not findWinner():
+    playerMove()
+    aiMove()
+'''
 
-def minimax(board, depth, isMax):
-    global score
-    result = checkWinner()
-    if(result != ''):
-        return score[result]
-
-    if (isMax):
-        best_score = -1000
-        for i in range(3):
-            for j in range(3):
-                # Is the spot available?
-                if(board[i][j] == ''):
-                    board[i][j] == ai
-                    score = minimax(board, depth+1, False)
-                    board[i][j] == ''
-                    if(score > best_score):
-                        best_score = score
-        return best_score
-    else:
-        best_score = 1000
-        for i in range(3):
-            for j in range(3):
-                # Is the spot available?
-                if(board[i][j] == ''):
-                    board[i][j] == human
-                    score = minimax(board, depth+1, True)
-                    board[i][j] == ''
-                    if(score < best_score):
-                        best_score = score
-        return best_score
-
-while(checkWinner() == ''):
-    print('Digite as coordenadas para a jogada: ', end='')
-    x, y = input().split(' ')
-    drawPlay(int(x), int(y))
-    printBoard()
-
-bestMove()
-result = checkWinner()
-
-print('The winner is: {}!! \n Congrats!!'.format(result))
+try:
+    while not findWinner():
+        playerMove()
+        aiMove()
+except:
+    pass
