@@ -101,7 +101,7 @@ def aiMove():
     for key in board.keys():
         if (board[key] == '_'):
             board[key] = ai
-            score = minimax(board, 8, True, -100, 100)
+            score = minimax(board, 8, False, -100, 100)
             board[key] = '_'
             if (score > bestScore):
                 bestScore = score
