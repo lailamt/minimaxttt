@@ -1,3 +1,5 @@
+import time
+
 def printBoard(board):
     print('{}|{}|{}\n{}|{}|{}\n{}|{}|{}\n'.format(board[0],board[1],board[2],board[3],board[4],board[5],board[6],board[7],board[8]))
 
@@ -94,10 +96,11 @@ def playerMove():
     insertLetter(human, position)
     return
 
-def aiMove():
+def aiMoveMinimax():
     print('AI turn!')
     bestScore = -100
     bestMove = 0
+    start = time.time()
     for key in board.keys():
         if (board[key] == '_'):
             board[key] = ai
@@ -106,6 +109,8 @@ def aiMove():
             if (score > bestScore):
                 bestScore = score
                 bestMove = key
+    end = time.time()
+    print('AI took {}s to make a decision'.format(round(end - start, 5)))
     insertLetter(ai, bestMove)
     return
 
@@ -137,6 +142,61 @@ def minimax(board, depth, isMaximizing):
                     bestScore = score
         return bestScore
 
+def aiMoveWithPruning():
+    print('AI turn!')
+    bestScore = -100
+    bestMove = 0
+    start = time.time()
+    for key in board.keys():
+        if (board[key] == '_'):
+            board[key] = ai
+            score = minimaxWithPruning(board, 8, False, -100, 100)
+            board[key] = '_'
+            if (score > bestScore):
+                bestScore = score
+                bestMove = key
+    end = time.time()
+    print('AI took {}s to make a decision'.format(round(end - start, 5)))
+    insertLetter(ai, bestMove)
+    return
+
+def minimaxWithPruning(board, depth, isMaximizing, alpha, beta):
+    if (depth == 0 or findWinner() != '_'):
+        if (checkWinnerInLevelMinimax(ai) == ai):
+            return 10
+        elif (checkWinnerInLevelMinimax(human) == human):
+            return -10
+        elif (checkTie()):
+            return 0
+    if (isMaximizing):
+        bestScore = -100
+        for key in board.keys():
+            if (board[key] == '_'):
+                board[key] = ai
+                score = minimaxWithPruning(board, depth - 1, False, alpha, beta)
+                board[key] = '_'
+                if (score >= bestScore):
+                    bestScore = score
+                    #bestMove = key
+                alpha = max(alpha, score)
+                if(beta <= alpha):
+                    break 
+        return bestScore
+    else:
+        bestScore = 100
+        for key in board.keys():
+            if (board[key] == '_'):
+                board[key] = human
+                score = minimaxWithPruning(board, depth - 1, True, alpha, beta)
+                board[key] = '_'
+                if (score < bestScore):
+                    bestScore = score
+                    #bestMove = key
+                beta = min(beta, score)
+                if (beta <= alpha):
+                    break
+        return bestScore
+
 board = {0: '_', 1: '_', 2: '_',
          3: '_', 4: '_', 5: '_',
          6: '_', 7: '_', 8: '_'}
@@ -145,10 +205,22 @@ printBoard(board)
 print('Human starts the game!!\n')
 human = 'O'
 ai = 'X'
+alpha = -100
+beta = 100
 
 try:
-    while not findWinner():
-        playerMove()
-        aiMove()
+    print('Choose the algorithm:\n 1 - Minimax\n 2 - Minimax with pruning')
+    algorithm = input('Input: ')
+    if(int(algorithm) == 1):
+        while not findWinner():
+            playerMove()
+            aiMoveMinimax()
+    elif(int(algorithm) == 2):
+        while not findWinner():
+            playerMove()
+            aiMoveWithPruning()
+    else:
+        print('Invalid input!')
+
 except:
     pass
