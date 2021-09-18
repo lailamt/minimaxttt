@@ -157,12 +157,6 @@ ai = 'X'
 alpha = -100
 beta = 100
 
-'''
-while not findWinner():
-    playerMove()
-    aiMove()
-'''
-
 try:
     while not findWinner():
         playerMove()
